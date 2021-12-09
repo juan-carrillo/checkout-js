@@ -21,9 +21,15 @@ export interface WithHostedCreditCardFieldsetProps {
     isUsingMultiShipping?: boolean;
     method: PaymentMethod;
 }
-
+type ContainersIdsTypes = {
+    ccNumber: string;
+    ccExpiry: string;
+    ccCvv: string;
+}
 export interface WithInjectedHostedCreditCardFieldsetProps {
     hostedFieldset: ReactNode;
+    getHostedFieldset: (shouldShowCardNameField: boolean) => ReactNode;
+    getHostedFormContainerIds: () => ContainersIdsTypes;
     hostedStoredCardValidationSchema: ObjectSchema<HostedInstrumentValidationSchemaShape>;
     hostedValidationSchema: ObjectSchema<HostedCreditCardValidationSchemaShape>;
     getHostedFormOptions(selectedInstrument?: CardInstrument): Promise<HostedFormOptions>;
@@ -63,6 +69,15 @@ export default function withHostedCreditCardFieldset<TProps extends WithHostedCr
         const getHostedFieldId: (name: string) => string = useCallback(name => {
             return `${compact([method.gateway, method.id]).join('-')}-${name}`;
         }, [method]);
+
+        const getHostedFormContainerIds: () => ContainersIdsTypes = () => {
+            return {
+                ccNumber: getHostedFieldId('ccNumber'),
+                ccCvv:  getHostedFieldId('ccCvv'),
+                ccExpiry: getHostedFieldId('ccExpiry'),
+                ccName: getHostedFieldId('ccName'),
+            }
+        }
 
         const getHostedFormOptions: (selectedInstrument?: CardInstrument) => Promise<HostedFormOptions> = useCallback(async selectedInstrument => {
             const styleProps = ['color', 'fontFamily', 'fontSize', 'fontWeight'];
@@ -176,6 +191,16 @@ export default function withHostedCreditCardFieldset<TProps extends WithHostedCr
             method,
         ]);
 
+        const getHostedFieldset = (shouldShowCardNameField: boolean = true) =>
+            <HostedCreditCardFieldset
+                additionalFields={ method.config.requireCustomerCode && <CreditCardCustomerCodeField name="ccCustomerCode" /> }
+                cardCodeId={ isCardCodeRequired ? getHostedFieldId('ccCvv') : undefined }
+                cardExpiryId={ getHostedFieldId('ccExpiry') }
+                cardNameId={ shouldShowCardNameField ? getHostedFieldId('ccName') : undefined }
+                cardNumberId={ getHostedFieldId('ccNumber') }
+                focusedFieldType={ focusedFieldType }
+            />
+
         if (!method.config.isHostedFormEnabled) {
             return <OriginalComponent
                 { ...rest as TProps }
@@ -187,7 +212,8 @@ export default function withHostedCreditCardFieldset<TProps extends WithHostedCr
             { ...rest as TProps }
             getHostedFormOptions={ getHostedFormOptions }
             getHostedStoredCardValidationFieldset={ getHostedStoredCardValidationFieldset }
-            hostedFieldset={
+            getHostedFormContainerIds={ getHostedFormContainerIds }
+            hostedFieldset= {
                 <HostedCreditCardFieldset
                     additionalFields={ method.config.requireCustomerCode && <CreditCardCustomerCodeField name="ccCustomerCode" /> }
                     cardCodeId={ isCardCodeRequired ? getHostedFieldId('ccCvv') : undefined }
@@ -196,7 +222,8 @@ export default function withHostedCreditCardFieldset<TProps extends WithHostedCr
                     cardNumberId={ getHostedFieldId('ccNumber') }
                     focusedFieldType={ focusedFieldType }
                 />
-            }
+             }
+            getHostedFieldset={ getHostedFieldset }
             hostedStoredCardValidationSchema={ getHostedInstrumentValidationSchema({ language }) }
             hostedValidationSchema={ getHostedCreditCardValidationSchema({ language }) }
             method={ method }
