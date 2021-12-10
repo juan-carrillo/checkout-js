@@ -115,7 +115,7 @@ const StripePaymentMethod: FunctionComponent<StripePaymentMethodProps & WithInje
             <CreditCardPaymentMethod
                 { ...rest }
                 method={ method }
-                cardFieldset={ getHostedFieldset(false) }
+                cardFieldset={ getHostedFieldset({}) }
                 cardValidationSchema={ hostedValidationSchema }
                 getStoredCardValidationFieldset={ getHostedStoredCardValidationFieldset }
                 initializePayment= { initializeStripePayment }

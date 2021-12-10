@@ -21,14 +21,22 @@ export interface WithHostedCreditCardFieldsetProps {
     isUsingMultiShipping?: boolean;
     method: PaymentMethod;
 }
+
 type ContainersIdsTypes = {
     ccNumber: string;
     ccExpiry: string;
     ccCvv: string;
+    ccPCode: string;
 }
+
+type GetHostedFormFieldsetProps = {
+    shouldShowCardNameField?: boolean,
+    shouldShowPostalCodeField?: boolean,
+}
+
 export interface WithInjectedHostedCreditCardFieldsetProps {
     hostedFieldset: ReactNode;
-    getHostedFieldset: (shouldShowCardNameField: boolean) => ReactNode;
+    getHostedFieldset: (props: GetHostedFormFieldsetProps) => ReactNode;
     getHostedFormContainerIds: () => ContainersIdsTypes;
     hostedStoredCardValidationSchema: ObjectSchema<HostedInstrumentValidationSchemaShape>;
     hostedValidationSchema: ObjectSchema<HostedCreditCardValidationSchemaShape>;
@@ -76,6 +84,7 @@ export default function withHostedCreditCardFieldset<TProps extends WithHostedCr
                 ccCvv:  getHostedFieldId('ccCvv'),
                 ccExpiry: getHostedFieldId('ccExpiry'),
                 ccName: getHostedFieldId('ccName'),
+                ccPCode: getHostedFieldId('ccPCode'),
             }
         }
 
@@ -191,13 +200,14 @@ export default function withHostedCreditCardFieldset<TProps extends WithHostedCr
             method,
         ]);
 
-        const getHostedFieldset = (shouldShowCardNameField: boolean = true) =>
+        const getHostedFieldset = ({ shouldShowCardNameField, shouldShowPostalCodeField }: GetHostedFormFieldsetProps) =>
             <HostedCreditCardFieldset
                 additionalFields={ method.config.requireCustomerCode && <CreditCardCustomerCodeField name="ccCustomerCode" /> }
                 cardCodeId={ isCardCodeRequired ? getHostedFieldId('ccCvv') : undefined }
                 cardExpiryId={ getHostedFieldId('ccExpiry') }
                 cardNameId={ shouldShowCardNameField ? getHostedFieldId('ccName') : undefined }
                 cardNumberId={ getHostedFieldId('ccNumber') }
+                postalCodeId={ shouldShowPostalCodeField ? getHostedFieldId('ccPCode'): undefined}
                 focusedFieldType={ focusedFieldType }
             />
 
