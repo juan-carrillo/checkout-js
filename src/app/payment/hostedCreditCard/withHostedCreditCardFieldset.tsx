@@ -27,6 +27,7 @@ type ContainersIdsTypes = {
     ccExpiry: string;
     ccCvv: string;
     ccPCode: string;
+    ccName: string;
 }
 
 type GetHostedFormFieldsetProps = {

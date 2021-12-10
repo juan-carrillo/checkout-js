@@ -1,12 +1,12 @@
-import { CardInstrument, PaymentInitializeOptions } from '@bigcommerce/checkout-sdk';
-import React, { useCallback, FunctionComponent } from 'react';
+import { PaymentInitializeOptions } from '@bigcommerce/checkout-sdk';
+import React, { useCallback, FunctionComponent, Fragment } from 'react';
 
 import { withHostedCreditCardFieldset, WithInjectedHostedCreditCardFieldsetProps } from '../hostedCreditCard';
 
-import HostedWidgetPaymentMethod, { HostedWidgetPaymentMethodProps } from './HostedWidgetPaymentMethod';
-import MollieCustomCardForm from './MollieCustomCardForm';
+import CreditCardPaymentMethod, { CreditCardPaymentMethodProps } from './CreditCardPaymentMethod';
+import MollieAPMCustomForm from './MollieAPMCustomForm';
 
-export type MolliePaymentMethodsProps = Omit<HostedWidgetPaymentMethodProps, 'containerId'>;
+export type MolliePaymentMethodsProps = CreditCardPaymentMethodProps;
 
 export enum MolliePaymentMethodType {
     creditcard = 'credit_card',
@@ -14,6 +14,9 @@ export enum MolliePaymentMethodType {
 
 const MolliePaymentMethod: FunctionComponent<MolliePaymentMethodsProps & WithInjectedHostedCreditCardFieldsetProps > = ({
     initializePayment,
+    getHostedFieldset,
+    hostedValidationSchema,
+    getHostedFormContainerIds,
     method,
     getHostedFormOptions,
     getHostedStoredCardValidationFieldset,
@@ -21,7 +24,7 @@ const MolliePaymentMethod: FunctionComponent<MolliePaymentMethodsProps & WithInj
     ...props
 }) => {
     const containerId = `mollie-${method.method}`;
-    const initializeMolliePayment: HostedWidgetPaymentMethodProps['initializePayment'] = useCallback(async (options: PaymentInitializeOptions, selectedInstrument) => {
+    const initializeMolliePayment: CreditCardPaymentMethodProps['initializePayment'] = useCallback(async (options: PaymentInitializeOptions, selectedInstrument) => {
         const mollieElements = getMolliesElementOptions();
 
         return initializePayment({
@@ -52,55 +55,46 @@ const MolliePaymentMethod: FunctionComponent<MolliePaymentMethodsProps & WithInj
     }, [initializePayment, containerId, getHostedFormOptions]);
 
     const getMolliesElementOptions = () => {
+        const containersIds = getHostedFormContainerIds();
 
         return {
             cardNumberElementOptions: {
-                containerId: 'mollie-card-number-component-field',
+                containerId: containersIds.ccNumber,
             },
             cardExpiryElementOptions: {
-                containerId: 'mollie-card-expiry-component-field',
+                containerId: containersIds.ccExpiry,
             },
             cardCvcElementOptions: {
-                containerId: 'mollie-card-cvc-component-field',
+                containerId: containersIds.ccCvv,
             },
             cardHolderElementOptions: {
-                containerId: 'mollie-card-holder-component-field',
+                containerId: containersIds.ccName,
             },
         };
     };
-
-    function renderCustomPaymentForm() {
-        const options = getMolliesElementOptions();
-
-        return <MollieCustomCardForm isCreditCard={ isCreditCard() } method={ method } options={ options } />;
-    }
 
     function isCreditCard(): boolean {
 
         return method.method === MolliePaymentMethodType.creditcard;
     }
 
-    function validateInstrument(_shouldShowNumber: boolean, selectedInstrument: CardInstrument) {
-        if (selectedInstrument && selectedInstrument.trustedShippingAddress) {
-            return;
-        }
-
-        return getHostedStoredCardValidationFieldset(selectedInstrument);
-    }
-
     return (
-        <HostedWidgetPaymentMethod
-            { ...props }
-            containerId={ containerId }
-            hideContentWhenSignedOut
-            initializePayment={ initializeMolliePayment }
-            isAccountInstrument={ !isCreditCard() }
-            method={ method }
-            renderCustomPaymentForm={ renderCustomPaymentForm }
-            shouldRenderCustomInstrument={ true }
-            storedCardValidationSchema={ hostedStoredCardValidationSchema }
-            validateInstrument={ validateInstrument }
-        />);
+        <Fragment>
+            {
+                isCreditCard() ?
+                    <CreditCardPaymentMethod
+                        { ...props }
+                        method={ method }
+                        cardFieldset={ getHostedFieldset({shouldShowCardNameField: true}) }
+                        cardValidationSchema={ hostedValidationSchema }
+                        getStoredCardValidationFieldset={ getHostedStoredCardValidationFieldset }
+                        initializePayment= { initializeMolliePayment }
+                        storedCardValidationSchema={ hostedStoredCardValidationSchema }
+                    />
+                : <MollieAPMCustomForm method={ method } />
+            }
+        </Fragment>
+    );
 };
 
 export default withHostedCreditCardFieldset(MolliePaymentMethod);
