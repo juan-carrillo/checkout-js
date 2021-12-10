@@ -9,7 +9,7 @@ import { getStoreConfig } from '../../config/config.mock';
 import { createLocaleContext, LocaleContext, LocaleContextType } from '../../locale';
 import { getPaymentMethod } from '../payment-methods.mock';
 
-import HostedFieldPaymentMethod, { HostedFieldPaymentMethodProps } from './HostedFieldPaymentMethod';
+import CreditCardPaymentMethod, { CreditCardPaymentMethodProps } from './CreditCardPaymentMethod';
 import { default as PaymentMethodComponent, PaymentMethodProps } from './PaymentMethod';
 import PaymentMethodId from './PaymentMethodId';
 
@@ -57,7 +57,7 @@ describe('when using Square payment', () => {
 
     it('renders as hosted field method', () => {
         const container = mount(<PaymentMethodTest { ...defaultProps } method={ method } />);
-        const component: ReactWrapper<HostedFieldPaymentMethodProps> = container.find(HostedFieldPaymentMethod);
+        const component: ReactWrapper<CreditCardPaymentMethodProps> = container.find(CreditCardPaymentMethod);
 
         expect(component.props())
             .toEqual(expect.objectContaining({
@@ -72,7 +72,7 @@ describe('when using Square payment', () => {
 
     it('initializes method with required config', () => {
         const container = mount(<PaymentMethodTest { ...defaultProps } method={ method } />);
-        const component: ReactWrapper<HostedFieldPaymentMethodProps> = container.find(HostedFieldPaymentMethod);
+        const component: ReactWrapper<CreditCardPaymentMethodProps> = container.find(CreditCardPaymentMethod);
 
         component.prop('initializePayment')({
             methodId: method.id,
@@ -114,7 +114,7 @@ describe('when using Square payment', () => {
         };
 
         const container = mount(<PaymentMethodTest { ...defaultProps } method={ method } />);
-        const component: ReactWrapper<HostedFieldPaymentMethodProps> = container.find(HostedFieldPaymentMethod);
+        const component: ReactWrapper<CreditCardPaymentMethodProps> = container.find(CreditCardPaymentMethod);
 
         component.prop('initializePayment')({
             methodId: method.id,

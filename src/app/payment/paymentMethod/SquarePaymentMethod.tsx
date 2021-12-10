@@ -1,12 +1,11 @@
 import { PaymentInitializeOptions } from '@bigcommerce/checkout-sdk';
-import React, { useCallback, FunctionComponent } from 'react';
-import { Omit } from 'utility-types';
+import React, { useCallback, FunctionComponent, Fragment, useMemo } from 'react';
 
-import CreditCardPaymentMethod from './CreditCardPaymentMethod';
-import { HostedFieldPaymentMethodProps } from './HostedFieldPaymentMethod';
 import { withHostedCreditCardFieldset, WithInjectedHostedCreditCardFieldsetProps } from '../hostedCreditCard';
 
-export type SquarePaymentMethodProps = Omit<HostedFieldPaymentMethodProps, 'cardCodeId' | 'cardExpiryId' | 'cardNumberId' | 'postalCodeId' | 'walletButtons'>;
+import CreditCardPaymentMethod, { CreditCardPaymentMethodProps } from './CreditCardPaymentMethod';
+
+export type SquarePaymentMethodProps = CreditCardPaymentMethodProps;
 
 const SquarePaymentMethod: FunctionComponent<SquarePaymentMethodProps & WithInjectedHostedCreditCardFieldsetProps> = ({
     initializePayment,
@@ -54,7 +53,7 @@ const SquarePaymentMethod: FunctionComponent<SquarePaymentMethodProps & WithInje
             },
         })
     }, [initializePayment, isMasterpassEnabled]);
-/*
+
     const walletButtons = useMemo(() => (
         <input
             className="button-masterpass"
@@ -62,31 +61,21 @@ const SquarePaymentMethod: FunctionComponent<SquarePaymentMethodProps & WithInje
             type="button"
         />
     ), []);
-*/
-    return <CreditCardPaymentMethod
-        { ...rest }
-        method={ method }
-        cardFieldset={ getHostedFieldset({
-            shouldShowPostalCodeField: true
-        }) }
-        cardValidationSchema={ hostedValidationSchema }
-        getStoredCardValidationFieldset={ getHostedStoredCardValidationFieldset }
-        initializePayment= { initializeSquarePayment }
-        storedCardValidationSchema={ hostedStoredCardValidationSchema }
-    />
 
-    /*
-    return <HostedFieldPaymentMethod
-        { ...rest }
-        cardCodeId="sq-cvv"
-        cardExpiryId="sq-expiration-date"
-        cardNumberId="sq-card-number"
-        initializePayment={ initializeSquarePayment }
-        method={ method }
-        postalCodeId="sq-postal-code"
-        walletButtons={ isMasterpassEnabled && walletButtons }
-    />;
-    */
+    return(
+        <Fragment>
+            <CreditCardPaymentMethod
+                { ...rest }
+                method={ method }
+                cardFieldset={ getHostedFieldset({ shouldShowPostalCodeField: true }) }
+                cardValidationSchema={ hostedValidationSchema }
+                getStoredCardValidationFieldset={ getHostedStoredCardValidationFieldset }
+                initializePayment= { initializeSquarePayment }
+                storedCardValidationSchema={ hostedStoredCardValidationSchema }
+            />
+            { isMasterpassEnabled && walletButtons }
+        </Fragment>
+    );
 };
 
 export default withHostedCreditCardFieldset(SquarePaymentMethod);

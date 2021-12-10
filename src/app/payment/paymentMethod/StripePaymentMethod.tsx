@@ -4,10 +4,10 @@ import React, { useCallback, FunctionComponent, Fragment } from 'react';
 import { withCheckout, CheckoutContextProps } from '../../checkout';
 import { withHostedCreditCardFieldset, WithInjectedHostedCreditCardFieldsetProps } from '../hostedCreditCard';
 
-import { HostedWidgetPaymentMethodProps } from './HostedWidgetPaymentMethod';
-import CreditCardPaymentMethod from './CreditCardPaymentMethod';
+import CreditCardPaymentMethod, { CreditCardPaymentMethodProps } from './CreditCardPaymentMethod';
+import { TranslatedString } from '../../locale';
 
-export type StripePaymentMethodProps = Omit<HostedWidgetPaymentMethodProps, 'containerId'>;
+export type StripePaymentMethodProps = Omit<CreditCardPaymentMethodProps, 'containerId'>;
 
 export interface StripeOptions {
     alipay?: StripeElementOptions;
@@ -101,7 +101,7 @@ const StripePaymentMethod: FunctionComponent<StripePaymentMethodProps & WithInje
         return stripeInitializeOptions[paymentMethodType];
     }, [paymentMethodType, getIndividualCardElementOptions, useIndividualCardFields]);
 
-    const initializeStripePayment: HostedWidgetPaymentMethodProps['initializePayment'] = useCallback(async (options: PaymentInitializeOptions, selectedInstrument) => {
+    const initializeStripePayment: CreditCardPaymentMethodProps['initializePayment'] = useCallback(async (options: PaymentInitializeOptions, selectedInstrument) => {
         return initializePayment({
             ...options,
             stripev3: { containerId,
@@ -121,16 +121,14 @@ const StripePaymentMethod: FunctionComponent<StripePaymentMethodProps & WithInje
                 initializePayment= { initializeStripePayment }
                 storedCardValidationSchema={ hostedStoredCardValidationSchema }
             />
+            {
+                method.id === 'iban' &&
+                <p className="stripe-sepa-mandate-disclaimer">
+                    <TranslatedString data={ {storeUrl} } id="payment.stripe_sepa_mandate_disclaimer" />
+                </p>
+            }
         </Fragment>
     );
-    /**
-     * {
-            method.id === 'iban' &&
-            <p className="stripe-sepa-mandate-disclaimer">
-                <TranslatedString data={ {storeUrl} } id="payment.stripe_sepa_mandate_disclaimer" />
-            </p>
-        }
-     */
 };
 
 function mapFromCheckoutProps(
