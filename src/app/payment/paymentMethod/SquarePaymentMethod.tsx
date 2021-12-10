@@ -1,48 +1,60 @@
 import { PaymentInitializeOptions } from '@bigcommerce/checkout-sdk';
-import React, { useCallback, useMemo, FunctionComponent } from 'react';
+import React, { useCallback, FunctionComponent } from 'react';
 import { Omit } from 'utility-types';
 
-import HostedFieldPaymentMethod, { HostedFieldPaymentMethodProps } from './HostedFieldPaymentMethod';
+import CreditCardPaymentMethod from './CreditCardPaymentMethod';
+import { HostedFieldPaymentMethodProps } from './HostedFieldPaymentMethod';
+import { withHostedCreditCardFieldset, WithInjectedHostedCreditCardFieldsetProps } from '../hostedCreditCard';
 
 export type SquarePaymentMethodProps = Omit<HostedFieldPaymentMethodProps, 'cardCodeId' | 'cardExpiryId' | 'cardNumberId' | 'postalCodeId' | 'walletButtons'>;
 
-const SquarePaymentMethod: FunctionComponent<SquarePaymentMethodProps> = ({
+const SquarePaymentMethod: FunctionComponent<SquarePaymentMethodProps & WithInjectedHostedCreditCardFieldsetProps> = ({
     initializePayment,
     method,
+    hostedValidationSchema,
+    hostedStoredCardValidationSchema,
+    getHostedFieldset,
+    getHostedFormContainerIds,
+    getHostedFormOptions,
+    getHostedStoredCardValidationFieldset,
     ...rest
 }) => {
     const isMasterpassEnabled = method.initializationData && method.initializationData.enableMasterpass;
 
-    const initializeSquarePayment = useCallback((options: PaymentInitializeOptions) => initializePayment({
-        ...options,
-        square: {
-            cardNumber: {
-                elementId: 'sq-card-number',
-            },
-            cvv: {
-                elementId: 'sq-cvv',
-            },
-            expirationDate: {
-                elementId: 'sq-expiration-date',
-            },
-            postalCode: {
-                elementId: 'sq-postal-code',
-            },
-            inputClass: 'form-input',
-            // FIXME: Need to pass the color values of the theme
-            inputStyles: [
-                {
-                    color: '#333',
-                    fontSize: '13px',
-                    lineHeight: '20px',
-                },
-            ],
-            masterpass: isMasterpassEnabled && {
-                elementId: 'sq-masterpass',
-            },
-        },
-    }), [initializePayment, isMasterpassEnabled]);
+    const initializeSquarePayment = useCallback((options: PaymentInitializeOptions) => {
+        const containerIds = getHostedFormContainerIds();
 
+        return initializePayment({
+            ...options,
+            square: {
+                cardNumber: {
+                    elementId: containerIds.ccNumber,
+                },
+                cvv: {
+                    elementId: containerIds.ccCvv,
+                },
+                expirationDate: {
+                    elementId: containerIds.ccExpiry,
+                },
+                postalCode: {
+                    elementId: containerIds.ccPCode,
+                },
+                inputClass: 'form-input',
+                // FIXME: Need to pass the color values of the theme
+                inputStyles: [
+                    {
+                        color: '#333',
+                        fontSize: '13px',
+                        lineHeight: '20px',
+                    },
+                ],
+                masterpass: isMasterpassEnabled && {
+                    elementId: 'sq-masterpass',
+                },
+            },
+        })
+    }, [initializePayment, isMasterpassEnabled]);
+/*
     const walletButtons = useMemo(() => (
         <input
             className="button-masterpass"
@@ -50,7 +62,20 @@ const SquarePaymentMethod: FunctionComponent<SquarePaymentMethodProps> = ({
             type="button"
         />
     ), []);
+*/
+    return <CreditCardPaymentMethod
+        { ...rest }
+        method={ method }
+        cardFieldset={ getHostedFieldset({
+            shouldShowPostalCodeField: true
+        }) }
+        cardValidationSchema={ hostedValidationSchema }
+        getStoredCardValidationFieldset={ getHostedStoredCardValidationFieldset }
+        initializePayment= { initializeSquarePayment }
+        storedCardValidationSchema={ hostedStoredCardValidationSchema }
+    />
 
+    /*
     return <HostedFieldPaymentMethod
         { ...rest }
         cardCodeId="sq-cvv"
@@ -61,6 +86,7 @@ const SquarePaymentMethod: FunctionComponent<SquarePaymentMethodProps> = ({
         postalCodeId="sq-postal-code"
         walletButtons={ isMasterpassEnabled && walletButtons }
     />;
+    */
 };
 
-export default SquarePaymentMethod;
+export default withHostedCreditCardFieldset(SquarePaymentMethod);
