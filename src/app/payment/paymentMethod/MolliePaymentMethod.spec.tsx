@@ -11,7 +11,8 @@ import { createLocaleContext, LocaleContext, LocaleContextType } from '../../loc
 import { withHostedCreditCardFieldset, WithInjectedHostedCreditCardFieldsetProps } from '../hostedCreditCard';
 import { getPaymentMethod } from '../payment-methods.mock';
 
-import HostedWidgetPaymentMethod, { HostedWidgetPaymentMethodProps } from './HostedWidgetPaymentMethod';
+import HostedWidgetPaymentMethod from './HostedWidgetPaymentMethod';
+import { CreditCardPaymentMethodProps } from './CreditCardPaymentMethod';
 import { default as PaymentMethodComponent, PaymentMethodProps } from './PaymentMethod';
 
 const hostedFormOptions = {
@@ -87,7 +88,7 @@ describe('MolliePaymentMethod', () => {
 
     it('renders as hosted widget method', () => {
         const container = mount(<PaymentMethodTest { ...defaultProps } method={ method } />);
-        const component: ReactWrapper<HostedWidgetPaymentMethodProps> = container.find(HostedWidgetPaymentMethod);
+        const component: ReactWrapper<CreditCardPaymentMethodProps> = container.find(HostedWidgetPaymentMethod);
 
         expect(component.props())
             .toEqual(expect.objectContaining({
@@ -98,7 +99,7 @@ describe('MolliePaymentMethod', () => {
 
     it('initializes method with required config', async () => {
         const container = mount(<PaymentMethodTest { ...defaultProps } method={ method } />);
-        const component: ReactWrapper<HostedWidgetPaymentMethodProps> = container.find(HostedWidgetPaymentMethod);
+        const component: ReactWrapper<CreditCardPaymentMethodProps> = container.find(HostedWidgetPaymentMethod);
         component.prop('initializePayment')({
             methodId: method.id,
             gatewayId: method.gateway,
