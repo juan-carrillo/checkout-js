@@ -13,6 +13,7 @@ export interface CreditCardFieldsetProps {
     shouldShowCardCodeField?: boolean;
     shouldShowCustomerCodeField?: boolean;
     shouldShowSaveCardField?: boolean;
+    shouldShowCardNameField?: boolean;
 }
 
 export interface CreditCardFieldsetValues {
